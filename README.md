@@ -1,31 +1,7 @@
-# kunpeng-competition
+# 鲲鹏应用创新大赛-openEuler赛道作品提交目录
 
 #### 介绍
-This reposiroty will hold the submissions of HiKunpeng Copetition openEuler Track.
-
-#### 软件架构
-软件架构说明
-
-
-#### 安装教程
-
-1.  xxxx
-2.  xxxx
-3.  xxxx
-
-#### 使用说明
-
-1.  xxxx
-2.  xxxx
-3.  xxxx
-
-#### 参与贡献
-
-1.  Fork 本仓库
-2.  新建 Feat_xxx 分支
-3.  提交代码
-4.  新建 Pull Request
-
+本仓库用于提交鲲鹏应用创新大赛-openEuler赛道参赛作品，请参赛队伍在对应年份目录中参考示例文件夹创建各自作品目录并进行上传。
 
 #### 特技
 
