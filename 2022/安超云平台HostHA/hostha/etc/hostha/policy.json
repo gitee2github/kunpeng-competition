@@ -1,0 +1,12 @@
+{
+    "context_is_admin": "role:admin",
+    "admin_or_owner": "is_admin:True or tenant_id:%(tenant_id)s",
+    "default": "rule:admin_or_owner",
+
+    "hostha:configuration:get": "is_admin:True",
+    "hostha:configuration:update": "is_admin:True",
+    "hostha:host_ha:get": "is_admin:True",
+    "hostha:host_ha:update": "is_admin:True",
+    "hostha:host_evacuation:get": "is_admin:True",
+    "hostha:vm_evacuation:get": "is_admin:True",
+}

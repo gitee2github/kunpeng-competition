@@ -1,0 +1,15 @@
+include package/systemd/hostha-api.service
+
+include package/systemd/hostha-hostha.service
+
+include etc/hostha/hostha.conf
+
+include etc/hostha/api-paste.ini
+include etc/hostha/policy.json
+include etc/logrotate.d/hostha
+include hostha/db/migration/README.md
+include hostha/db/migration/alembic.ini
+include hostha/db/migration/alembic_migrations/script.py.mako
+
+prune doc
+exclude hostha.spec

@@ -1,0 +1,11 @@
+[Unit]
+Description=Hostha API Service
+After=syslog.target network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/hostha-api --config-file /etc/hostha/hostha.conf --log-file /var/log/hostha/api.log
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
