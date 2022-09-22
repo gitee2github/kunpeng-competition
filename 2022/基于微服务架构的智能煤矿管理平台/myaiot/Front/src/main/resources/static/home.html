@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Kribug</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css"
+          integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous">
+    <link rel="stylesheet" href="./element-ui/lib/theme-chalk/index.css">
+    <script src="./js/vue.min.js"></script>
+    <script src="./element-ui/lib/index.js"></script>
+    <script src="./js/axios.min.js"></script>
+    <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"
+            integrity="sha384-aJ21OjlMXNL5UyIl/XNwTMqvzeRMZH2w8c5cRVpzpU8Y5bApTppSuUkhZXN0VxHd" crossorigin="anonymous"></script>
+    <style>
+        .el-dropdown-link {
+            cursor: pointer;
+            color: #409EFF;
+        }
+        .el-icon-arrow-down {
+            font-size: 12px;
+        }
+        .el-menu-vertical-demo:not(.el-menu--collapse) {
+            width: 200px;
+            min-height: 400px;
+        }
+
+        #cent{
+            margin-top: 0;
+            margin-left: 5%;
+            margin-right: 5%;
+            width: 90%;
+        }
+    </style>
+</head>
+<body id="cent">
+<div id="appHome">
+
+
+
+
+    <el-container>
+        <el-header>
+            <el-menu :default-active="activeIndex" class="el-menu-demo" mode="horizontal" @select="handleSelect">
+                <el-menu-item index="1">控制中心</el-menu-item>
+                <el-dropdown @command="handleCommand" style="float: right;text-align: right;margin-top: 20px;margin-right: 40px">
+                    <span style="color: #409eff">当前用户: {{currentUser.username}}</span>
+                    <el-dropdown-menu split-button:true slot="dropdown">
+                        <el-dropdown-item command="userInfo">用户信息</el-dropdown-item>
+                        <el-dropdown-item command="updatePassword">修改密码</el-dropdown-item>
+                        <el-dropdown-item divided command="logout">注销</el-dropdown-item>
+                    </el-dropdown-menu>
+                </el-dropdown>
+            </el-menu>
+        </el-header>
+        <el-container>
+            <div style="margin-top: 20px">
+
+
+                <el-switch v-model="isCollapse" style="margin-left: 20px">
+                </el-switch>
+
+                <el-menu default-active="1" class="el-menu-vertical-demo" @select="handleSelect" @open="handleOpen" @close="handleClose" :collapse="isCollapse">
+
+                    <el-menu-item index="1" @click="showAllDevice">
+                        <i class="el-icon-menu"></i>
+                        <span slot="title">我的设备</span>
+                    </el-menu-item>
+                    <el-menu-item index="2" @click="deviceManage">
+                        <i class="el-icon-house"></i>
+                        <span slot="title">矿区管理</span>
+                    </el-menu-item>
+                    <el-menu-item index="3" @click="addDevice">
+                        <i class="el-icon-document-add"></i>
+                        <span slot="title">添加设备</span>
+                    </el-menu-item>
+
+                    <el-menu-item index="4" @click="automation">
+                        <i class="el-icon-help"></i>
+                        <span slot="title">设备联动</span>
+                    </el-menu-item>
+
+
+                    <el-menu-item index="5" @click="userManage" v-if="currentUser.isAdmin === 1">
+                        <i class="el-icon-document-add"></i>
+                        <span slot="title">用户管理</span>
+                    </el-menu-item>
+
+                    <el-menu-item index="6" @click="modelManage" v-if="currentUser.isAdmin === 1">
+                        <i class="el-icon-setting"></i>
+                        <span slot="title">设备管理</span>
+                    </el-menu-item>
+
+                    <el-menu-item index="7" @click="statisticServer" v-if="currentUser.isAdmin === 1">
+                        <i class="el-icon-setting"></i>
+                        <span slot="title">设备数据大屏</span>
+                    </el-menu-item>
+
+                    <el-menu-item index="8" @click="adminServer" v-if="currentUser.isAdmin === 1">
+                        <i class="el-icon-setting"></i>
+                        <span slot="title">系统服务监控</span>
+                    </el-menu-item>
+
+                    <el-menu-item index="9" @click="eurekaServer" v-if="currentUser.isAdmin === 1">
+                        <i class="el-icon-setting"></i>
+                        <span slot="title">注册中心</span>
+                    </el-menu-item>
+                </el-menu>
+            </div>
+
+            <el-main style="width: 50%;height: 620px">
+                <div id="Main1"></div>
+            </el-main>
+
+            <el-main style="margin: 0 auto">
+                <div id="Main2"></div>
+            </el-main>
+
+        </el-container>
+        <el-footer>
+            <div id="footer" style="">
+
+            </div>
+        </el-footer>
+
+    </el-container>
+
+
+</div>
+<script>
+
+    currentOpenedDevice = null;
+    currentUser = null;
+    $.ajaxSetup ({
+        cache: false //关闭AJAX相应的缓存
+    });
+    $.ajax ({
+        cache: false //关闭AJAX相应的缓存
+    });
+    var Main = {
+        data() {
+            return {
+                isCollapse: false,
+                activeIndex: '1',
+                currentUser: {
+                    username: '未登录'
+                }
+            };
+        },
+        methods: {
+            handleOpen(key, keyPath) {
+                console.log(key, keyPath);
+            },
+            handleClose(key, keyPath) {
+                console.log(key, keyPath);
+            },
+            handleSelect(key, keyPath) {
+            },
+            logout(){
+                console.log("logout")
+                axios({
+                    method: 'post',
+                    url: 'http://localhost/user/logout'
+                }).then(function (arr) {
+                    window.location = '/'
+                })
+            },
+            userInfo(){
+                $("#Main1").load("/userInfo.html")
+            },
+            updatePassword(){
+                $("#Main1").load("/updatePassword.html")
+            },
+            handleCommand(obj){
+                if(obj === "logout"){
+                    this.logout()
+                }else if(obj === "userInfo"){
+                    this.userInfo()
+                }else{
+                    this.updatePassword()
+                }
+            },
+            showAllDevice(){
+                $("#Main1").load("/showAllDevice.html?freshCode="+new Date().getDate())
+            },
+            deviceManage(){
+                $("#Main1").load("/roomManage.html?freshCode="+new Date().getDate())
+            },
+            addDevice(){
+                $("#Main1").load("/addDevice.html?freshCode="+new Date().getDate())
+            },
+            userManage(){
+                $("#Main1").load("/userManage.html?freshCode="+new Date().getDate())
+            },
+            modelManage(){
+                $("#Main1").load("/modelManage.html?freshCode="+new Date().getDate())
+            },
+            automation(){
+                $("#Main1").load("/automation.html?freshCode="+new Date().getDate())
+            },
+            adminServer(){
+                window.location = "http://localhost/adminserver/"
+            },
+            eurekaServer(){
+                window.location = "http://localhost:8761"
+            },
+            statisticServer(){
+                window.location = "http://localhost:50401/dashboard/show/861cf22dd183362f117c/"
+            }
+
+        },
+        watch: {
+
+        },
+        mounted: function (){
+            $("#footer").load("/asr.html?freshCode="+new Date().getDate())
+        }
+    }
+
+    var CtorHome = Vue.extend(Main)
+    var appHome = new CtorHome().$mount('#appHome');
+    axios({
+        method: 'get',
+        url: 'http://localhost/user/getCurrentUser'
+    }).then(function (arr) {
+        if(arr.data.statusCode !== 666){
+            window.location = '/'
+        }else{
+            appHome.currentUser = arr.data.data
+            currentUser = arr.data.data
+        }
+    })
+    function openDevice(v) {
+        $("#Main2").load("http://localhost/"+(v.model.serverName).toLowerCase() + "/")
+        currentOpenedDevice = v
+    }
+    appHome.showAllDevice()
+    appAllDevicePage = null
+</script>
+</body>
+</html>

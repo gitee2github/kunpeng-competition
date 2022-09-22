@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Kribug</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css" 
+          integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous">
+    <link rel="stylesheet" href="./element-ui/lib/theme-chalk/index.css">
+    <script src="./js/vue.min.js"></script>
+    <script src="./element-ui/lib/index.js"></script>
+    <script src="./js/axios.min.js"></script>
+    <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"
+            integrity="sha384-aJ21OjlMXNL5UyIl/XNwTMqvzeRMZH2w8c5cRVpzpU8Y5bApTppSuUkhZXN0VxHd" crossorigin="anonymous"></script>
+    <style>
+        .el-menu-vertical-demo:not(.el-menu--collapse) {
+            width: 200px;
+            min-height: 400px;
+        }
+
+        body{
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        #app{
+            position: absolute;
+            width: 500px;
+            height: 300px;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            margin: auto;
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+
+    <h2 style="color: #66b1ff;text-align: center;margin-bottom: 30px">用户登录</h2>
+    <el-form label-width="80px" :model="loginForm">
+        <el-form-item label="账号:">
+            <el-input v-model="loginForm.username"></el-input>
+        </el-form-item>
+        <el-form-item label="密码:">
+            <el-input v-model="loginForm.password"></el-input>
+        </el-form-item>
+        <el-form-item label="验证码:">
+            <el-input v-model="loginForm.code"></el-input>
+        </el-form-item>
+        <div class="login-code">
+            <img style="float: right" :src="codeUrl" @click="getCode">
+        </div>
+        <el-button style="float: right" @click="jump()">注册</el-button>
+        <el-button type="success" style="float: right" @click="login()">登录</el-button>
+    </el-form>
+</div>
+<script>
+    var Main = {
+        data() {
+            return {
+                loginForm: {
+                    username: '',
+                    password: '',
+                    code: '',
+                    uuid: ''
+                },
+                codeUrl: ''
+            };
+        },
+        created(){
+            this.getCode()
+        },
+        methods: {
+            login(){
+                let V = this
+                let username = this.loginForm.username
+                let password = this.loginForm.password
+                let code = this.loginForm.code
+                let uuid = this.loginForm.uuid
+                if(username === '' || password === ''|| code === ''){
+                    this.$message({
+                        showClose: false,
+                        message: '请输入用户名或密码或验证码',
+                        type: 'warning',
+                        duration: 1000
+                    });
+                    return
+                }
+                axios({
+                    method: 'post',
+                    url: 'http://localhost/user/login',
+                    data: {
+                        username : this.loginForm.username,
+                        password : this.loginForm.password,
+                        code : this.loginForm.code,
+                        uuid : this.loginForm.uuid
+                    }
+
+                }).then(function (arr) {
+                    if (arr.data.statusCode === 666){
+                        window.location='home.html'
+                    }
+                    else if(arr.data.statusCode === 399){
+                        V.$message({
+                            showClose: false,
+                            message: '验证码输入错误',
+                            type: 'error',
+                            duration: 1000
+                        });
+                    }
+                    else{
+                        V.$message({
+                            showClose: false,
+                            message: '登录失败',
+                            type: 'error',
+                            duration: 1000
+                        });
+                    }
+                })
+            },
+            jump(){
+                window.location='register.html'
+            },
+            getCode() {
+                axios({
+                    method: 'get',
+                    url: 'http://localhost/user/code'
+                }).then(res => {
+                    this.codeUrl = res.data.img
+                    this.loginForm.uuid = res.data.uuid
+                })
+            }
+        },
+        watch: {
+
+        }
+    }
+    var Ctor = Vue.extend(Main)
+    var app = new Ctor().$mount('#app');
+</script>
+</body>
+</html>

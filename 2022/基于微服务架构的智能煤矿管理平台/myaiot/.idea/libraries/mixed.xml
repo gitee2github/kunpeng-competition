@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="mixed">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/datagear/datagear-connection/src/test/resources/drivers/mixed/ojdbc6-11.2.0.3.jar!/" />
+      <root url="jar://$PROJECT_DIR$/datagear/datagear-connection/src/test/resources/drivers/mixed/mysql-connector-java-5.1.23.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

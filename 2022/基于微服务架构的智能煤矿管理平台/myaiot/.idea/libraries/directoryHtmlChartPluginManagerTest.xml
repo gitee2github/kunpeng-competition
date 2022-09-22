@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="directoryHtmlChartPluginManagerTest">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/datagear/datagear-analysis/src/test/resources/org/datagear/analysis/support/html/directoryHtmlChartPluginManagerTest/plugin.upload.zip!/" />
+      <root url="jar://$PROJECT_DIR$/datagear/datagear-analysis/src/test/resources/org/datagear/analysis/support/html/directoryHtmlChartPluginManagerTest/plugin.current.zip!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

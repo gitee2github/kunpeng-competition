@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="builtInDriverEntity1">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/datagear/datagear-web/target/classes/org/datagear/web/builtInDriverEntity.zip!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

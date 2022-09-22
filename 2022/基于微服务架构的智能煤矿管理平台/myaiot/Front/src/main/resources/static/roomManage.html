@@ -1,0 +1,179 @@
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>userInfo</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css"
+          integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous">
+    <link rel="stylesheet" href="./element-ui/lib/theme-chalk/index.css">
+    <script src="./js/vue.min.js"></script>
+    <script src="./element-ui/lib/index.js"></script>
+    <script src="./js/axios.min.js"></script>
+    <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"
+            integrity="sha384-aJ21OjlMXNL5UyIl/XNwTMqvzeRMZH2w8c5cRVpzpU8Y5bApTppSuUkhZXN0VxHd" crossorigin="anonymous"></script>
+    <style>
+        .el-tag + .el-tag {
+            margin-left: 10px;
+        }
+        .button-new-tag {
+            margin-left: 10px;
+            height: 32px;
+            line-height: 30px;
+            padding-top: 0;
+            padding-bottom: 0;
+        }
+        .input-new-tag {
+            width: 90px;
+            margin-left: 10px;
+            vertical-align: bottom;
+        }
+    </style>
+</head>
+<div id="appRoomManage">
+    <el-tag
+            :key="room"
+            v-for="room in allRoom"
+            closable
+            :disable-transitions="false"
+            @close="handleClose(room)">
+        {{room.title}}
+    </el-tag>
+    <el-input
+            class="input-new-tag"
+            v-if="inputVisible"
+            v-model="inputValue"
+            ref="saveTagInput"
+            size="small"
+            @keyup.enter.native="handleInputConfirm"
+            @blur="handleInputConfirm"
+    >
+    </el-input>
+    <el-button v-else class="button-new-tag" size="small" @click="showInput">创建一个新矿区</el-button>
+
+</div>
+<script>
+    var MainRoomManage = {
+        data() {
+            return {
+                currentUser: {},
+                multipleSelection: [],
+                allRoom: [],
+                inputVisible: false,
+                inputValue: ''
+
+            };
+        },
+        methods: {
+            //加载用户和矿区
+            async loadCurrentUser(){
+                let V = this
+                await axios({
+                    method: 'get',
+                    url: 'http://localhost/user/getCurrentUser'
+                }).then(function (arr) {
+                    let user = arr.data.data;
+                    if(arr.data.statusCode !== 666){
+                        window.location = '/'
+                    }else{
+                        V.currentUser = arr.data.data
+                    }
+                })
+
+                axios({
+                    method: 'get',
+                    url: 'http://localhost/room/getUserAllRoom/' + V.currentUser.id
+                }).then(function (arr) {
+                    let rooms = arr.data.data;
+                    if(arr.data.statusCode !== 666){
+                        window.location = '/'
+                    }else{
+                        V.allRoom = rooms
+                    }
+                })
+            },
+            handleClose(room) {
+                V = this
+                axios({
+                    method: 'delete',
+                    url: 'http://localhost/room/' + room.id
+                }).then(function (arr) {
+                    if(arr.data.statusCode !== 666){
+                        V.$message({
+                            showClose: false,
+                            message: '删除失败',
+                            type: 'error',
+                            duration: 1000
+                        });
+                    }else{
+                        V.$message({
+                            showClose: false,
+                            message: '删除成功',
+                            type: 'success',
+                            duration: 1000
+                        });
+                        V.allRoom.splice(V.allRoom.indexOf(room), 1);
+                    }
+                })
+            },
+
+            showInput() {
+                this.inputVisible = true;
+                this.$nextTick(_ => {
+                    this.$refs.saveTagInput.$refs.input.focus();
+                });
+            },
+
+            handleInputConfirm() {
+                let inputValue = this.inputValue;
+                V = this
+                if (inputValue) {
+                    axios({
+                        method: 'post',
+                        url: 'http://localhost/room/?userId='+V.currentUser.id + "&title="+inputValue
+                    }).then(function (arr) {
+                        console.log(arr)
+                        if(arr.data.statusCode !== 666){
+                            V.$message({
+                                showClose: false,
+                                message: '添加失败',
+                                type: 'error',
+                                duration: 1000
+                            });
+                        }else{
+                            V.$message({
+                                showClose: false,
+                                message: '添加成功',
+                                type: 'success',
+                                duration: 1000
+                            });
+                            V.allRoom.push({
+                                "id": arr.data.data.id,
+                                title: inputValue,
+                                userId: V.currentUser.id
+                            });
+                        }
+                    })
+
+                }
+                this.inputVisible = false;
+                this.inputValue = '';
+            }
+
+
+        },
+        mounted: function () {
+            this.loadCurrentUser()
+        },
+        watch: {
+            multipleSelection: function () {
+                if(this.multipleSelection.length === 1){
+                    
+                }
+            }
+        }
+    }
+    var CtorRoomManage = Vue.extend(MainRoomManage)
+    var appRoomManage = new CtorRoomManage().$mount('#appRoomManage');
+
+</script>

@@ -1,0 +1,238 @@
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>userInfo</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css"
+          integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous">
+    <link rel="stylesheet" href="./element-ui/lib/theme-chalk/index.css">
+    <script src="./js/vue.min.js"></script>
+    <script src="./element-ui/lib/index.js"></script>
+    <script src="./js/axios.min.js"></script>
+    <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"
+            integrity="sha384-aJ21OjlMXNL5UyIl/XNwTMqvzeRMZH2w8c5cRVpzpU8Y5bApTppSuUkhZXN0VxHd" crossorigin="anonymous"></script>
+    <style>
+        
+    </style>
+</head>
+<div id="appAddDevice">
+
+    <div v-if="step === 0"  style="margin: 30px auto;height: 350px;margin-left: 100px">
+
+
+        <el-form ref="form" :model="addDeviceForm" label-width="80px">
+
+            <el-select v-model="addDeviceForm.modelSelect" placeholder="选择型号" >
+                <el-option
+                        v-for="item in allModel"
+                        :key="item.id"
+                        :label="item.title"
+                        :value="item.id">
+                </el-option>
+            </el-select>
+            <br>
+            <el-select v-model="addDeviceForm.roomSelect" placeholder="选择矿区" style="margin-top: 15px;margin-bottom: 15px">
+                <el-option
+                        v-for="item in allRoom"
+                        :key="item.id"
+                        :label="item.title"
+                        :value="item.id">
+                </el-option>
+            </el-select>
+            <br>
+
+            <el-input placeholder="名称" v-model="addDeviceForm.title" class="demo-form-inline" style="width: 205px" ></el-input>
+
+            <br>
+            <el-button class="el-button--primary"  style="margin-top: 50px" @click="addStep1">下一步</el-button>
+
+
+        </el-form>
+    </div>
+
+    <div v-if="step === 1"  style="margin: 30px auto;height: 350px;margin-left: 100px">
+
+            <div>
+                1.设备通电<br><br>
+                2.连接到设备的热点<br><br>
+                3.进入192.168.4.1配置设备<br><br>
+                4.给设备配置Wifi网络<br><br>
+                4.输入设备唯一Id和Password进行配置<br><br>
+                5.配置成功即可<br><br>
+
+                <span style="color: #409eff">id：{{hasAddDevice.id}}</span><br>
+                <span style="color: #409eff">password：{{hasAddDevice.password}}</span>
+
+            </div>
+            <div>
+                当前状态:
+                <el-tag type="info"  v-if="bindState === 0">未绑定</el-tag>
+                <el-tag type="success"  v-if="bindState === 1">已绑定</el-tag>
+                <el-button type="primary" icon="el-icon-refresh" circle title="刷新绑定状态" style="float: right" @click="refeshAddState">
+                </el-button>
+            </div>
+
+    </div>
+
+    <div v-if="step === 2"  style="margin: 30px auto;height: 350px;margin-left: 100px">
+        <el-result icon="success" title="成功提示" subTitle="请根据提示进行操作">
+        </el-result>
+    </div>
+
+
+    <el-steps :active="step" finish-status="success">
+        <el-step title="步骤一"></el-step>
+        <el-step title="步骤二"></el-step>
+        <el-step title="添加完成"></el-step>
+    </el-steps>
+
+</div>
+<script>
+    var MainAddDevice = {
+        data() {
+            return {
+                currentUser: {},
+                allRoom: [],
+                step: 0,
+
+                allModel: [],
+
+                addDeviceForm: {
+                    title: '',
+                    roomSelect: '',
+                    modelSelect: '',
+                },
+
+                hasAddDevice: {
+
+                },
+                bindState: 0,
+            };
+        },
+        methods: {
+            //加载用户和矿区以及模型
+            async loadCurrentUser(){
+                let V = this
+                await axios({
+                    method: 'get',
+                    url: 'http://localhost/user/getCurrentUser'
+                }).then(function (arr) {
+                    let user = arr.data.data;
+                    if(arr.data.statusCode !== 666){
+                        window.location = '/'
+                    }else{
+                        V.currentUser = arr.data.data
+                    }
+                })
+
+                axios({
+                    method: 'get',
+                    url: 'http://localhost/room/getUserAllRoom/' + V.currentUser.id
+                }).then(function (arr) {
+                    let rooms = arr.data.data;
+                    if(arr.data.statusCode !== 666){
+                        window.location = '/'
+                    }else{
+                        V.allRoom = rooms
+                    }
+                })
+
+                axios({
+                    method: 'get',
+                    url: 'http://localhost/device/model/getAll'
+                }).then(function (arr) {
+                    let models = arr.data.data;
+                    if(arr.data.statusCode !== 666){
+                        window.location = '/'
+                    }else{
+                        V.allModel = models
+                    }
+                })
+            },
+
+            next() {
+                this.step++
+            },
+
+            addStep1(){
+                V = this
+                if(this.addDeviceForm.modelSelect === ''){
+                    V.$message({
+                        showClose: false,
+                        message: '请选择型号！',
+                        type: 'warning',
+                        duration: 1000
+                    });
+                    return
+                }
+                if(this.addDeviceForm.roomSelect === ''){
+                    V.$message({
+                        showClose: false,
+                        message: '请选择矿区！',
+                        type: 'warning',
+                        duration: 1000
+                    });
+                    return
+                }
+                if(this.addDeviceForm.title === ''){
+                    V.$message({
+                        showClose: false,
+                        message: '请输入名称！',
+                        type: 'warning',
+                        duration: 1000
+                    });
+                    return
+                }
+
+                console.log('http://localhost/device/?userId=' + V.currentUser.id + "&modelId=" +  V.addDeviceForm.modelSelect
+                    + "&roomId=" + V.addDeviceForm.roomSelect + "&title=" + V.addDeviceForm.title)
+                axios({
+                    method: 'post',
+                    url: 'http://localhost/device/?userId=' + V.currentUser.id + "&modelId=" +  V.addDeviceForm.modelSelect
+                    + "&roomId=" + V.addDeviceForm.roomSelect + "&title=" + V.addDeviceForm.title
+                }).then(function (arr) {
+                    let device = arr.data.data;
+                    if(arr.data.statusCode !== 666){
+                        console.log(arr)
+                        // window.location = '/'
+                    }else{
+                        console.log(device)
+                        V.hasAddDevice = device
+                        V.next()
+                        V.refeshAddState()
+                    }
+                })
+            },
+            refeshAddState(){
+                let V = this
+                axios({
+                    method: 'get',
+                    url: 'http://localhost/device/' + V.hasAddDevice.id
+                }).then(function (arr) {
+                    let device = arr.data.data;
+                    console.log(device)
+                    if(arr.data.statusCode !== 666){
+                        console.log(arr)
+                        // window.location = '/'
+                    }else{
+                        if(device.bindState === 1){
+                            console.log("绑定成功")
+                            V.bindState = 1
+                            V.next()
+                        }
+                    }
+                })
+            },
+
+        },
+        mounted: function () {
+            this.loadCurrentUser()
+        },
+        watch: {
+
+        }
+    }
+    var CtorAddDevice = Vue.extend(MainAddDevice)
+    var appAddDevice = new CtorAddDevice().$mount('#appAddDevice');
+</script>

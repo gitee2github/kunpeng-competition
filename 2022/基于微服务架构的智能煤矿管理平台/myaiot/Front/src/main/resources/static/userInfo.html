@@ -1,0 +1,148 @@
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>userInfo</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css"
+          integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous">
+    <link rel="stylesheet" href="./element-ui/lib/theme-chalk/index.css">
+    <script src="./js/vue.min.js"></script>
+    <script src="./element-ui/lib/index.js"></script>
+    <script src="./js/axios.min.js"></script>
+    <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"
+            integrity="sha384-aJ21OjlMXNL5UyIl/XNwTMqvzeRMZH2w8c5cRVpzpU8Y5bApTppSuUkhZXN0VxHd" crossorigin="anonymous"></script>
+    <style>
+        el-input {
+            margin: 0;
+            width: 100px;
+            border: none;
+        }
+    </style>
+</head>
+<div id="appUserInfo">
+    <el-divider></el-divider>
+
+    <el-form label-width="80px" :model="userInfoForm">
+
+        <el-descriptions class="margin-top" title="用户信息" :column="2" border>
+            <template slot="extra">
+                <el-button type="primary" size="small" @click="update" icon="el-icon-edit"></el-button>
+            </template>
+            <el-descriptions-item>
+                <template slot="label">
+                    <i class="el-icon-user">账号</i>
+                </template>
+                <el-input v-model="userInfoForm.username" disabled="true"></el-input>
+            </el-descriptions-item>
+
+            <el-descriptions-item>
+                <template slot="label">
+                    <i class="el-icon-mobile-phone">手机号</i>
+                </template>
+                <el-input v-model="userInfoForm.phone" :disabled="disableEdit"></el-input>
+            </el-descriptions-item>
+            <el-descriptions-item>
+                <template slot="label">
+                    <i class="el-icon-user">姓名</i>
+                </template>
+                <el-input v-model="userInfoForm.name" :disabled="disableEdit"></el-input>
+            </el-descriptions-item>
+
+            <el-descriptions-item>
+                <template slot="label">
+                    <i class="el-icon-message">邮箱</i>
+                </template>
+                <el-input v-model="userInfoForm.email" :disabled="disableEdit"></el-input>
+            </el-descriptions-item>
+
+        </el-descriptions>
+        <div v-if="showUpdateButton" style="float: right;margin-top: 20px">
+            <el-button type="success" icon="el-icon-check" @click="startUpdate"></el-button>
+        </div>
+
+
+
+    </el-form>
+
+
+</div>
+<script>
+    var MainUserInfo = {
+        data() {
+            return {
+                showUpdateButton: false,
+                disableEdit: true,
+                currentUser: {},
+                userInfoForm: {
+                    username: '',
+                    phone: '',
+                    email: '',
+                    name: '',
+                    id: ''
+                }
+            };
+        },
+        methods: {
+            update(){
+                this.disableEdit = !this.disableEdit;
+                this.showUpdateButton = !this.showUpdateButton;
+            },
+            async startUpdate(){
+                let V = this
+                if(this.userInfoForm.id === '' || this.userInfoForm.id === '' ||
+                    this.userInfoForm.id === '' || this.userInfoForm.id === ''){
+                    V.$message({
+                        showClose: false,
+                        message: '字段不能为空',
+                        type: 'error',
+                        duration: 1000
+                    })
+                    return
+                }
+                await axios({
+                    method: 'put',
+                    url: 'http://localhost/user/?id='+this.userInfoForm.id + "&phone=" + this.userInfoForm.phone
+                    +"&email=" +  this.userInfoForm.email + "&name=" + this.userInfoForm.name
+                }).then(function (arr) {
+                    if(arr.data.statusCode !== 666){
+                        V.$message({
+                            showClose: false,
+                            message: '修改失败',
+                            type: 'error',
+                            duration: 1000
+                        })
+                    }else{
+                        V.$message({
+                            showClose: false,
+                            message: '修改成功,重新登录将更新信息',
+                            type: 'success',
+                            duration: 1000
+                        })
+                        V.disableEdit = !V.disableEdit;
+                        V.showUpdateButton = !V.showUpdateButton;
+                    }
+                })
+            }
+        }
+    }
+    var CtorUserInfo = Vue.extend(MainUserInfo)
+    var appUserInfo = new CtorUserInfo().$mount('#appUserInfo');
+    axios({
+        method: 'get',
+        url: 'http://localhost/user/getCurrentUser'
+    }).then(function (arr) {
+        let user = arr.data.data;
+        if(arr.data.statusCode !== 666){
+            window.location = '/'
+        }else{
+            appUserInfo.userInfoForm.id = user.id;
+            appUserInfo.userInfoForm.phone = user.phone;
+            appUserInfo.userInfoForm.name = user.name;
+            appUserInfo.userInfoForm.email = user.email;
+            appUserInfo.currentUser = arr.data.data
+            Vue.set(appUserInfo.userInfoForm, "username", user.username)
+
+        }
+    })
+</script>

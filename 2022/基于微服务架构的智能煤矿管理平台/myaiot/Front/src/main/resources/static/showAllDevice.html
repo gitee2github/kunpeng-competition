@@ -1,0 +1,233 @@
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>userInfo</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css"
+          integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous">
+    <link rel="stylesheet" href="./element-ui/lib/theme-chalk/index.css">
+    <script src="./js/vue.min.js"></script>
+    <script src="./element-ui/lib/index.js"></script>
+    <script src="./js/axios.min.js"></script>
+    <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"
+            integrity="sha384-aJ21OjlMXNL5UyIl/XNwTMqvzeRMZH2w8c5cRVpzpU8Y5bApTppSuUkhZXN0VxHd" crossorigin="anonymous"></script>
+    <style>
+
+    </style>
+</head>
+<div id="appAllDevice" v-loading="loading">
+    <template>
+        <!--<el-select v-model="roomValue" placeholder="按房间查找设备" size="small">
+            <el-option
+                    v-for="item in roomOptions"
+                    :key="item.value"
+                    :label="item.label"
+                    :value="item.value">
+            </el-option>
+        </el-select>-->
+        <el-tag v-for="item in roomOptions" @click="changeRoom(item)" style="margin-left: 10px">{{item.label}}</el-tag>
+        <el-button type="primary" icon="el-icon-refresh" circle title="刷新" size="small" style="float: right" @click="loadAllDevice">
+        </el-button>
+    </template>
+    <el-divider></el-divider>
+    <el-row :gutter="12" >
+            <el-empty description="该矿区一个设备也没有,先去添加一个吧" v-if="showEmptyBox" style="width: 100%;height: 500px"></el-empty>
+            <el-col :span="6" v-for="item in showDevice">
+                <div @click="optionDevice($event, item)">
+                    <el-card shadow="hover"  v-if="item.inLineState" :deviceId="item.id" style="margin-bottom: 10px">
+                        <div style="text-align: center">
+                            <span style="color: #409EFF">{{item.title}}</span>
+                        </div>
+                        <div style="margin-top: 20px;text-align: center">
+                            <el-tag type="success">在线</el-tag>
+                            <el-tag>{{item.room.title}}</el-tag>
+                        </div>
+
+                    </el-card>
+
+                    <el-card v-else shadow="hover" style="margin-bottom: 10px">
+                        <div style="text-align: center">
+                            <span style="color: #909399">{{item.title}}</span>
+                        </div>
+
+                        <div style="margin-top: 20px;text-align: center">
+                            <el-tag type="info" v-if="item.bindState === 0">未绑定</el-tag>
+                            <el-tag type="danger" v-else>离线</el-tag>
+                            <el-tag type="info">{{item.room.title}}</el-tag>
+                        </div>
+
+                    </el-card>
+                </div>
+            </el-col>
+
+        </el-row>
+</div>
+<script>
+    var MainAllDevice = {
+        data() {
+
+            return {
+                currentUser: {},
+                allDevice: [],
+                showDevice: [],
+                roomOptions: [
+                    {
+                        value: 'allSelected',
+                        label: '所有矿区'
+                    },
+                    {
+                        value: '默认矿区',
+                        label: '默认矿区'
+                    }
+                ],
+                roomValue: 'allSelected',
+                showEmptyBox: false,
+                loading: true,
+            };
+        },
+        methods: {
+            //加载房间和用户
+            async loadInfo(){
+                let V = this
+                await axios({
+                    method: 'get',
+                    url: 'http://localhost/user/getCurrentUser'
+                }).then(function (arr) {
+                    let user = arr.data.data;
+                    if(arr.data.statusCode !== 666){
+                        window.location = '/'
+                    }else{
+                        V.currentUser = arr.data.data
+                    }
+                })
+
+                axios({
+                    method: 'get',
+                    url: 'http://localhost/room/getUserAllRoom/' + V.currentUser.id
+                }).then(function (arr) {
+                    let rooms = arr.data.data;
+                    if(arr.data.statusCode !== 666){
+                        window.location = '/'
+                    }else{
+                        for(let i = 0 ; i < rooms.length ; i++){
+                            V.roomOptions.push(
+                                {
+                                    value: rooms[i].title,
+                                    label: rooms[i].title
+                                }
+                            )
+                        }
+                        console.log(V.roomOptions)
+                    }
+                })
+                this.loadAllDevice()
+            },
+            loadAllDevice(){
+                let V = this
+                axios({
+                    method: 'get',
+                    url: 'http://localhost/device/getDeviceByUser?id=' + V.currentUser.id
+                }).then(function (arr) {
+                    V.allDevice = []
+                    let allDevice = arr.data.data;
+                    for(let i = 0 ; i < allDevice.length ; i++){
+                        Vue.set(allDevice[i], "model", {title: ''})
+                        Vue.set(allDevice[i], "room", {title: ''})
+                    }
+                    if(arr.data.statusCode !== 666){
+                        window.location = '/'
+                    }else{
+                        //查找设备对应Model
+                        for(let i = 0 ; i < allDevice.length ; i++){
+                            axios({
+                                method: 'get',
+                                url: 'http://localhost/device/model/getById?id=' + allDevice[i].modelId
+                            }).then(function (arr) {
+                                let model = arr.data.data;
+                                if(arr.data.statusCode !== 666){
+                                    window.location = '/'
+                                }else{
+                                    Vue.set(V.allDevice[i], "model", model)
+                                    // allDevice[i].model = model;
+                                }
+                            })
+                            Vue.set(V.allDevice, i, allDevice[i])
+                        }
+                        //查找设备对应房间
+                        for(let i = 0 ; i < allDevice.length ; i++){
+                            if(allDevice[i].roomId == null){
+                                allDevice[i].room = {
+                                    title: "默认矿区"
+                                };
+                                continue
+                            }
+                            axios({
+                                method: 'get',
+                                url: 'http://localhost/room/' + allDevice[i].roomId
+                            }).then(function (arr) {
+                                let room = arr.data.data;
+                                if(arr.data.statusCode !== 666){
+                                    window.location = '/'
+                                }else{
+                                    Vue.set(V.allDevice[i], "room", room)
+                                    // allDevice[i].room = room;
+                                }
+                            })
+                            Vue.set(V.allDevice, i, allDevice[i])
+                        }
+                    }
+
+                    console.log(V.allDevice)
+                    V.showDevice = V.allDevice;
+                    if(V.showDevice.length === 0){
+                        V.showEmptyBox = true;
+                    }else{
+                        V.showEmptyBox = false;
+                    }
+                })
+
+
+                this.loading = false
+
+            },
+            optionDevice(e, item){
+                openDevice(item)
+            },
+            changeRoom(tag){
+                this.roomValue = tag.value
+            }
+
+        },
+        mounted: function () {
+            this.loadInfo()
+        },
+        watch: {
+            roomValue: function (v) {
+                let V = this
+                this.showDevice = []
+                if(v === 'allSelected'){
+                    for(let i = 0 ; i < this.allDevice.length ; i++){
+                        this.showDevice.push(this.allDevice[i])
+                    }
+                }else{
+                    for(let i = 0 ; i < this.allDevice.length ; i++){
+                        if(this.allDevice[i].room.title === v){
+                            this.showDevice.push(this.allDevice[i])
+                        }
+                    }
+                }
+
+                if(V.showDevice.length === 0){
+                    V.showEmptyBox = true;
+                }else{
+                    V.showEmptyBox = false;
+                }
+            }
+        }
+    }
+    var CtorAllDevice = Vue.extend(MainAllDevice)
+    var appAllDevice = new CtorAllDevice().$mount('#appAllDevice');
+
+    appAllDevicePage = appAllDevice
+</script>

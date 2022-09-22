@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile default="true" name="Default" enabled="true" />
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="EurekaServer" />
+        <module name="Asr" />
+        <module name="AttributeService" />
+        <module name="UserService" />
+        <module name="Front" />
+        <module name="AdminServer" />
+        <module name="DeviceService" />
+        <module name="TemperatureAndHumidity" />
+        <module name="KribugLight" />
+        <module name="OptionService" />
+        <module name="Gateway" />
+        <module name="CombustibleGasDetection" />
+        <module name="WaterHeight" />
+        <module name="StatusDataService" />
+        <module name="RoomService" />
+        <module name="KribugFan" />
+      </profile>
+    </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="AdminServer" target="1.8" />
+      <module name="Asr" target="1.8" />
+      <module name="AttributeService" target="1.8" />
+      <module name="CombustibleGasDetection" target="1.8" />
+      <module name="datagear" target="1.8" />
+      <module name="datagear-analysis" target="1.8" />
+      <module name="datagear-connection" target="1.8" />
+      <module name="datagear-dataexchange" target="1.8" />
+      <module name="datagear-management" target="1.8" />
+      <module name="datagear-meta" target="1.8" />
+      <module name="datagear-persistence" target="1.8" />
+      <module name="datagear-util" target="1.8" />
+      <module name="datagear-web" target="1.5" />
+      <module name="DeviceService" target="1.8" />
+      <module name="Entity" target="1.8" />
+      <module name="EurekaServer" target="1.8" />
+      <module name="Face" target="1.8" />
+      <module name="Front" target="1.8" />
+      <module name="Gateway" target="1.8" />
+      <module name="KribugFan" target="1.8" />
+      <module name="KribugLight" target="1.8" />
+      <module name="OptionService" target="1.8" />
+      <module name="ResponseResult" target="1.8" />
+      <module name="RoomService" target="1.8" />
+      <module name="StatusDataService" target="1.8" />
+      <module name="TemperatureAndHumidity" target="1.8" />
+      <module name="UserService" target="1.8" />
+      <module name="WaterHeight" target="1.8" />
+    </bytecodeTargetLevel>
+  </component>
+</project>

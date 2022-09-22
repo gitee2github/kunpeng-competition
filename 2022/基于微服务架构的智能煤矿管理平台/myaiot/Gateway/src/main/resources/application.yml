@@ -1,0 +1,86 @@
+server:
+  port: 80
+
+eureka:
+  client:
+    service-url:
+      DefaultZone: http://localhost:8761/eureka/
+
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: AdminServer
+          uri: lb://AdminServer
+          predicates:
+            - Path=/adminServer/**
+
+        - id: UserService
+          uri: lb://UserService
+          predicates:
+            - Path=/user/**
+
+        - id: RoomService
+          uri: lb://RoomService
+          predicates:
+            - Path=/room/**
+
+        - id: DeviceService
+          uri: lb://DeviceService
+          predicates:
+            - Path=/device/**
+
+        - id: KribugLight
+          uri: lb://KribugLight
+          predicates:
+            - Path=/KribugLight/**
+
+        - id: KribugLight
+          uri: lb://KribugFan
+          predicates:
+            - Path=/KribugFan/**
+
+        - id: Asr
+          uri: lb://Asr
+          predicates:
+            - Path=/asr/**
+
+        - id: TemperatureAndHumidity
+          uri: lb://TemperatureAndHumidity
+          predicates:
+            - Path=/TemperatureAndHumidity/**
+
+        - id: CombustibleGasDetection
+          uri: lb://CombustibleGasDetection
+          predicates:
+            - Path=/CombustibleGasDetection/**
+
+        - id: WaterHeight
+          uri: lb://WaterHeight
+          predicates:
+            - Path=/WaterHeight/**
+
+        - id: OptionService
+          uri: lb://OptionService
+          predicates:
+            - Path=/Option/**
+
+        - id: AttributeService
+          uri: lb://AttributeService
+          predicates:
+            - Path=/Attribute/**
+
+        - id: StatusDataService
+          uri: lb://StatusDataService
+          predicates:
+            - Path=/status/**
+
+        - id: Front
+          uri: lb://Front
+          predicates:
+            - Path=/**
+
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true

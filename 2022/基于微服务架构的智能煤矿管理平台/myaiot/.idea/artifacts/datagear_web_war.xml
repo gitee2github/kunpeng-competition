@@ -1,0 +1,14 @@
+<component name="ArtifactManager">
+  <artifact type="war" name="datagear-web:war">
+    <output-path>$PROJECT_DIR$/datagear/datagear-web/target</output-path>
+    <properties id="maven-jee-properties">
+      <options>
+        <module>datagear-web</module>
+        <packaging>war</packaging>
+      </options>
+    </properties>
+    <root id="archive" name="datagear-4.0.0.war">
+      <element id="artifact" artifact-name="datagear-web:war exploded" />
+    </root>
+  </artifact>
+</component>
