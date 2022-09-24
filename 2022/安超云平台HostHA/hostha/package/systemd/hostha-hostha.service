@@ -1,0 +1,11 @@
+[Unit]
+Description=HostHa hostha Service
+After=syslog.target network.target openstack-nova-api.service
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/hostha-hostha --config-file /etc/hostha/hostha.conf --log-file /var/log/hostha/hostha.log
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
