@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="htmlChartPluginLoaders">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/datagear/datagear-analysis/src/test/resources/org/datagear/analysis/support/html/htmlChartPluginLoaders/not-plugin-02.zip!/" />
+      <root url="jar://$PROJECT_DIR$/datagear/datagear-analysis/src/test/resources/org/datagear/analysis/support/html/htmlChartPluginLoaders/plugin04.zip!/" />
+      <root url="jar://$PROJECT_DIR$/datagear/datagear-analysis/src/test/resources/org/datagear/analysis/support/html/htmlChartPluginLoaders/plugin03.zip!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

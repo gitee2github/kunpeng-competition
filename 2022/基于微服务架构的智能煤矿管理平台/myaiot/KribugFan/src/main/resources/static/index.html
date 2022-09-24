@@ -1,0 +1,295 @@
+<div id="KribugFan" style="width: 300px;right: 50px;position:absolute;">
+
+        <el-row :gutter="12" style="margin-bottom: 10px">
+            <el-col :span="24">
+                <el-card shadow="always" style="height: 500px;width:90%;background-color: #FDFDFD;margin: 0;padding: 0">
+
+                    <div style="right: 40px;top: 10px;margin-right: 5px;position: absolute;text-align: right">
+                            <el-button type="primary" circle icon="el-icon-close" @click="closePage" size="mini"></el-button>
+                    </div>
+                    <!--<div style="right: 75px;top: 10px;margin-right: 5px;position: absolute;text-align: right">
+                        <el-button type="primary" icon="el-icon-refresh" circle title="刷新" size="mini" @click="refreshDevice"></el-button>
+                    </div>-->
+                    <div style="text-align: center;color: #409eff">
+                        <div v-if="currentDevice.inLineState === 1">
+                            <span style="font-size: 20px">{{currentDevice.title}}</span><!--名称--><br>
+                            <span style="font-size: 12px">{{currentDevice.room.title}}</span><!--矿区-->&nbsp;
+                            <span style="font-size: 14px">在线</span>
+
+                        </div>
+                        <div v-else style="text-align: center;color: #909399">
+                            <span style="font-size: 20px">{{currentDevice.title}}</span><!--名称--><br>
+                            <span style="font-size: 12px">{{currentDevice.room.title}}</span><!--矿区-->&nbsp;
+                            <span style="font-size: 14px">离线</span>
+                        </div>
+
+
+                    </div>
+
+                    <div @click="optionMY_SWITCH" style="margin-top: 30px"><!--控制内容-->
+                        开关：
+                        <el-switch
+                                v-model="MY_SWITCH"
+                                active-value="1"
+                                inactive-value="-1"
+                                :disabled="disableMY_SWITCH"
+                        >
+                        </el-switch>
+                    </div>
+
+
+
+
+                    <div style="text-align: center">
+                        <el-button size="small" @click="tag=1">设备管理</el-button>
+                        <el-button size="small" @click="tag=2">设备信息</el-button>
+                    </div>
+
+
+                    <div v-if="tag===1" style="margin-top: 30px;padding: 0;width: 100%">
+                        矿区:
+                        <el-select v-model="roomValue" placeholder="按矿区查找设备" size="small" style="width: 160px">
+                        <el-option
+                                v-for="item in roomOptions"
+                                :key="item.id"
+                                :label="item.title"
+                                :value="item.id">
+                        </el-option>
+                    </el-select><br>
+                        名称:<el-input v-model="deviceTitle" size="small"
+                                     style="width: 160px;margin-top: 10px;margin-bottom: 10px;margin-left: 5px"></el-input>
+                        <br>
+                        <div style="text-align: center;margin-top: 30px">
+                            <el-button type="success" icon="el-icon-check" size="small" @click="updateInfo"></el-button>
+                            <el-button type="danger" icon="el-icon-delete" size="small" @click="deleteDialogVisible=true"></el-button>
+                        </div>
+
+                    </div>
+                    <div v-if="tag===2"  style="margin: 0;margin-top:30px;padding: 0;width: 100%;text-align: center">
+                        <el-descriptions title="" size="mini" :column="1" border>
+                            <el-descriptions-item label="设备型号">{{currentDevice.model.title}}</el-descriptions-item>
+                            <el-descriptions-item label="添加时间">{{currentDevice.addTime.substring(0,16)}}</el-descriptions-item>
+                            <el-descriptions-item label="绑定状态" v-if="currentDevice.bindState == 1">已绑定</el-descriptions-item>
+                            <el-descriptions-item label="绑定状态" v-else>未绑定</el-descriptions-item>
+                            <el-descriptions-item label="绑定时间">{{currentDevice.bindTime.substring(0,16)}}</el-descriptions-item>
+                        </el-descriptions>
+                    </div>
+
+                    <el-dialog
+                            title="删除"
+                            :visible.sync="deleteDialogVisible"
+                            width="30%"
+                            :before-close="handleClose">
+                        <span>确认删除吗</span>
+                        <span slot="footer" class="dialog-footer">
+                        <el-button @click="deleteDialogVisible = false">取 消</el-button>
+                        <el-button type="primary" @click="deleteDevice">确 定</el-button>
+  </span>
+                    </el-dialog>
+
+                </el-card>
+            </el-col>
+        </el-row>
+    </div>
+
+
+<script>
+    var refreshDeviceTimeout;
+    var KribugFanMain = {
+        data() {
+            return {
+                MY_SWITCH: 0,
+                disableMY_SWITCH: true,
+                currentDevice: {
+                    title: '',
+                    inLineState: '',
+                    room: {
+                        title: ''
+                    }
+                },
+                tag: 0,
+                roomOptions: [
+
+                ],
+                roomValue: '',
+                deleteDialogVisible: false,
+                deviceTitle: '',
+            }
+        },
+        methods: {
+            optionMY_SWITCH(){
+                V = this
+                axios({
+                    method: 'post',
+                    url: 'http://112.74.34.69/device/option?id='+V.currentDevice.id+'&key=' + 'MY_SWITCH&value=' + V.MY_SWITCH,
+                }).then(function (arr) {
+
+                })
+                // clearTimeout(refreshDeviceTimeout)
+                // refreshDeviceTimeout = setTimeout(refreshDevice, 3000)
+            },
+
+            handleClose(done) {
+                this.$confirm('确认关闭？')
+                    .then(_ => {
+                        done();
+                    })
+                    .catch(_ => {});
+            },
+            loadAllRoom(){
+                V = this
+                V.roomValue = V.currentDevice.room.id
+                axios({
+                    method: 'get',
+                    url: 'http://localhost/room/getUserAllRoom/' + V.currentDevice.userId
+                }).then(function (arr) {
+                    let rooms = arr.data.data;
+                    if(arr.data.statusCode !== 666){
+                        window.location = '/'
+                    }else{
+                        for(let i = 0 ; i < rooms.length ; i++){
+                            V.roomOptions.push(rooms[i])
+                        }
+                    }
+                })
+            },
+            deleteDevice(){
+                let V = this
+                this.deleteDialogVisible = false
+                axios({
+                    method: 'delete',
+                    url: 'http://localhost/device/' + V.currentDevice.id
+                }).then(function (arr) {
+                    if(arr.data.statusCode !== 666){
+                        V.$message({
+                            showClose: false,
+                            message: '删除失败',
+                            type: 'error',
+                            duration: 1000
+                        });
+                    }else{
+                        V.$message({
+                            showClose: false,
+                            message: '删除成功',
+                            type: 'success',
+                            duration: 1000
+                        });
+                        $("#Main2").html("")
+                        appAllDevicePage.loadAllDevice()
+                    }
+                })
+            },
+            updateInfo(){
+                let V = this
+                if(V.currentDevice.title !== V.deviceTitle){
+                    axios({
+                        method: 'put',
+                        url: 'http://localhost/device/updateTitle?id=' + V.currentDevice.id
+                            + '&title=' + V.deviceTitle
+                    }).then(function (arr) {
+                        if(arr.data.statusCode !== 666){
+                            V.$message({
+                                showClose: false,
+                                message: '修改标题失败',
+                                type: 'error',
+                                duration: 1000
+                            });
+                        }else{
+                            V.$message({
+                                showClose: false,
+                                message: '修改标题成功',
+                                type: 'success',
+                                duration: 1000
+                            });
+                            appAllDevicePage.loadAllDevice()
+                        }
+                    })
+                }
+
+
+                if(V.currentDevice.roomId !== V.roomValue){
+                    axios({
+                        method: 'put',
+                        url: 'http://localhost/device/updateRoom?id=' + V.currentDevice.id
+                            + '&roomId=' + V.roomValue
+                    }).then(function (arr) {
+                        if(arr.data.statusCode !== 666){
+                            V.$message({
+                                showClose: false,
+                                message: '修改矿区失败',
+                                type: 'error',
+                                duration: 1000
+                            });
+                        }else{
+                            V.$message({
+                                showClose: false,
+                                message: '修改矿区成功',
+                                type: 'success',
+                                duration: 1000
+                            });
+                            appAllDevicePage.loadAllDevice()
+                            refreshDevice()
+                        }
+                    })
+                }
+
+            },
+            closePage(){
+                $("#Main2").html("")
+            },
+        },
+        watch: {
+
+        },
+
+    }
+
+    var KribugFanCtor = Vue.extend(KribugFanMain)
+    var KribugFan = new KribugFanCtor().$mount('#KribugFan');
+    KribugFan.currentDevice = currentOpenedDevice
+    function refreshDevice() {
+        let V = this
+        axios({
+            method: 'get',
+            url: 'http://localhost/device/'+KribugFan.currentDevice.id
+        }).then(function (arr) {
+            let device = arr.data.data;
+            if(arr.data.statusCode !== 666){
+                // window.location = '/'
+            }else{
+                KribugFan.deviceTitle = device.title
+                KribugFan.roomValue = device.roomId
+                KribugFan.currentDevice.inLineState = device.inLineState
+                KribugFan.currentDevice.title = device.title
+                KribugFan.currentDevice.roomId = device.roomId
+                for(let i = 0 ; i < KribugFan.roomOptions.length ; i++){
+                    if(KribugFan.roomOptions[i].id === device.roomId){
+
+                        KribugFan.currentDevice.room.title = KribugFan.roomOptions[i].title
+                        break;
+                    }
+
+
+                }
+                if (KribugFan.currentDevice.inLineState === 1){
+                    KribugFan.currentDevice.jsonStatusInfo = device.jsonStatusInfo
+                    KribugFan.disableMY_SWITCH = false
+                    let statusInfo = JSON.parse(KribugFan.currentDevice.jsonStatusInfo);
+                    KribugFan.MY_SWITCH = statusInfo.MY_SWITCH
+                    console.log(KribugFan.MY_SWITCH)
+
+                }else{
+                    KribugFan.disableMY_SWITCH = true
+                }
+
+
+            }
+        })
+        refreshDeviceTimeout = setTimeout(refreshDevice, 20000)
+
+    }
+    refreshDevice()
+    KribugFan.loadAllRoom()
+
+
+</script>

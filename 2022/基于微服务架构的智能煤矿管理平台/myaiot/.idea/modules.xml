@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/AdminServer/AdminServer.iml" filepath="$PROJECT_DIR$/AdminServer/AdminServer.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Asr/Asr.iml" filepath="$PROJECT_DIR$/Asr/Asr.iml" />
+      <module fileurl="file://$PROJECT_DIR$/AttributeService/AttributeService.iml" filepath="$PROJECT_DIR$/AttributeService/AttributeService.iml" />
+      <module fileurl="file://$PROJECT_DIR$/CombustibleGasDetection/CombustibleGasDetection.iml" filepath="$PROJECT_DIR$/CombustibleGasDetection/CombustibleGasDetection.iml" />
+      <module fileurl="file://$PROJECT_DIR$/DeviceService/DeviceService.iml" filepath="$PROJECT_DIR$/DeviceService/DeviceService.iml" />
+      <module fileurl="file://$PROJECT_DIR$/EurekaServer/EurekaServer.iml" filepath="$PROJECT_DIR$/EurekaServer/EurekaServer.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Front/Front.iml" filepath="$PROJECT_DIR$/Front/Front.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Gateway/Gateway.iml" filepath="$PROJECT_DIR$/Gateway/Gateway.iml" />
+      <module fileurl="file://$PROJECT_DIR$/KribugFan/KribugFan.iml" filepath="$PROJECT_DIR$/KribugFan/KribugFan.iml" />
+      <module fileurl="file://$PROJECT_DIR$/KribugLight/KribugLight.iml" filepath="$PROJECT_DIR$/KribugLight/KribugLight.iml" />
+      <module fileurl="file://$PROJECT_DIR$/OptionService/OptionService.iml" filepath="$PROJECT_DIR$/OptionService/OptionService.iml" />
+      <module fileurl="file://$PROJECT_DIR$/RoomService/RoomService.iml" filepath="$PROJECT_DIR$/RoomService/RoomService.iml" />
+      <module fileurl="file://$PROJECT_DIR$/StatusDataService/StatusDataService.iml" filepath="$PROJECT_DIR$/StatusDataService/StatusDataService.iml" />
+      <module fileurl="file://$PROJECT_DIR$/TemperatureAndHumidity/TemperatureAndHumidity.iml" filepath="$PROJECT_DIR$/TemperatureAndHumidity/TemperatureAndHumidity.iml" />
+      <module fileurl="file://$PROJECT_DIR$/UserService/UserService.iml" filepath="$PROJECT_DIR$/UserService/UserService.iml" />
+      <module fileurl="file://$PROJECT_DIR$/WaterHeight/WaterHeight.iml" filepath="$PROJECT_DIR$/WaterHeight/WaterHeight.iml" />
+      <module fileurl="file://$PROJECT_DIR$/datagear/datagear.iml" filepath="$PROJECT_DIR$/datagear/datagear.iml" />
+    </modules>
+  </component>
+</project>

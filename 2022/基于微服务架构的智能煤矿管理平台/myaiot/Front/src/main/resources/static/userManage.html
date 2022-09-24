@@ -1,0 +1,261 @@
+
+<div id="appUserManage">
+    <div>
+        <el-row>
+            <el-button type="success" icon="el-icon-plus" title="添加" :disabled="disabledAdd" @click="addUserDialogVisible=true"></el-button>
+            <el-button type="danger" icon="el-icon-delete" title="删除" :disabled="disabledDel" @click="delUser"></el-button>
+            <el-button type="warning" icon="el-icon-close" title="禁用" :disabled="disabledDel" @click="disableUser"></el-button>
+            <el-button type="primary" icon="el-icon-check" title="启用" :disabled="disabledDel" @click="unDisableUser"></el-button>
+
+        </el-row>
+    </div>
+    <template>
+        <el-table
+                ref="multipleTable"
+                :data="allUsers"
+                tooltip-effect="dark"
+                style="width: 100%"
+                @selection-change="handleSelectionChange">
+            <el-table-column
+                    type="selection"
+                    width="55">
+            </el-table-column>
+            <el-table-column
+                    prop="username"
+                    label="用户名"
+                    width="120">
+            </el-table-column>
+            <el-table-column
+                    prop="name"
+                    label="姓名"
+                    width="100">
+            </el-table-column>
+            <el-table-column
+                    prop="email"
+                    label="邮箱"
+                    width="180">
+            </el-table-column>
+            <el-table-column
+                    prop="phone"
+                    label="手机号"
+                    width="140">
+            </el-table-column>
+            <el-table-column
+                    prop="addTime"
+                    label="注册时间"
+                    width="120">
+            </el-table-column>
+            <el-table-column
+                    prop="state"
+                    label="账号状态"
+                    width="120">
+            </el-table-column>
+        </el-table>
+    </template>
+
+    <el-dialog
+            title="添加用户"
+            :visible.sync="addUserDialogVisible"
+            width="30%"
+            center>
+        <el-form label-width="80px" :model="addUserForm">
+            <el-form-item label="用户名">
+                <el-input v-model="addUserForm.username"></el-input>
+            </el-form-item>
+            <el-form-item label="密码">
+                <el-input v-model="addUserForm.password"></el-input>
+            </el-form-item>
+        </el-form>
+        <span slot="footer" class="dialog-footer">
+    <el-button @click="addUserDialogVisible = false">取 消</el-button>
+    <el-button type="primary" @click="addUser">添 加</el-button>
+  </span>
+    </el-dialog>
+</div>
+
+
+
+<script>
+    var MainUserManage = {
+        data() {
+            return {
+                currentUser: {},
+                multipleSelection: [],
+                allUsers: [],
+                tableData: [],
+                disabledAdd: false,
+                disabledEdit: true,
+                disabledDel: true,
+                addUserDialogVisible: false,
+                addUserForm: {
+                    username: '',
+                    password: '',
+                },
+
+            };
+        },
+        methods: {
+            //加载用户
+            async loadCurrentUser(){
+                let V = this
+                await axios({
+                    method: 'get',
+                    url: 'http://localhost/user/getCurrentUser'
+                }).then(function (arr) {
+                    let user = arr.data.data;
+                    if(arr.data.statusCode !== 666){
+                        window.location = '/'
+                    }else{
+                        V.currentUser = arr.data.data
+                    }
+                })
+
+
+            },
+
+            loadAllUser(){
+                let V = this
+                axios({
+                    method: 'get',
+                    url: 'http://localhost/user/getAll'
+                }).then(function (arr) {
+                    let user = arr.data.data;
+                    if(arr.data.statusCode !== 666){
+                        window.location = '/'
+                    }else{
+                        V.allUsers = arr.data.data
+                        V.tableData = arr.data.data
+                        for(let i = 0 ; i < V.tableData.length ; i++){
+                            if(V.tableData[i].addTime !== null){
+                                V.tableData[i].addTime = V.tableData[i].addTime.substring(0, 10)
+                            }
+                            if(V.tableData[i].state === 1){
+                                V.tableData[i].state = "正常"
+                            }else{
+                                V.tableData[i].state = "禁用"
+
+                            }
+                        }
+                    }
+                })
+
+
+            },
+            handleSelectionChange(val) {
+                this.multipleSelection = val;
+                this.disabledEdit = this.multipleSelection.length !== 1;
+                this.disabledDel = !this.multipleSelection.length > 0;
+
+            },
+            addUser(){
+                let V = this
+                V.addUserDialogVisible = true
+                if (V.addUserForm.username.trim() === '' || V.addUserForm.password.trim() === ''){
+                    V.$message({
+                        showClose: false,
+                        message: '用户名和密码不能为空',
+                        type: 'error',
+                        duration: 1000
+                    });
+                    return
+                }
+                axios({
+                    method: 'post',
+                    url: 'http://localhost/user/?username=' + V.addUserForm.username
+                    + '&password=' + V.addUserForm.password
+                }).then(function (arr) {
+                    if(arr.data.statusCode !== 666){
+                        V.$message({
+                            showClose: false,
+                            message: '添加失败，用户名重复',
+                            type: 'error',
+                            duration: 1000
+                        });
+                    }else{
+                        V.$message({
+                            showClose: false,
+                            message: '添加成功',
+                            type: 'success',
+                            duration: 1000
+                        });
+                        V.loadAllUser()
+                    }
+                    V.addUserDialogVisible = false
+                })
+
+            },
+            delUser(){
+                let V = this
+                for(let i = 0 ; i < V.multipleSelection.length ; i++){
+                    axios({
+                        method: 'delete',
+                        url: 'http://localhost/user/' + V.multipleSelection[i].id
+                    }).then(function (arr) {
+                        if(arr.data.statusCode !== 666){
+                            this.$message({
+                                showClose: false,
+                                message: '错误',
+                                type: 'error',
+                                duration: 1000
+                            });
+                        }else{
+                            V.loadAllUser()
+                        }
+                    })
+                }
+
+            },
+            disableUser(){
+                let V = this
+                for(let i = 0 ; i < V.multipleSelection.length ; i++) {
+                    axios({
+                        method: 'put',
+                        url: 'http://localhost/user/?id=' + V.multipleSelection[i].id
+                        + '&state=0'
+                    }).then(function (arr) {
+                        if (arr.data.statusCode !== 666) {
+                            V.$message({
+                                showClose: false,
+                                message: '错误',
+                                type: 'error',
+                                duration: 1000
+                            });
+                        } else {
+                            V.loadAllUser()
+                        }
+                    })
+                }
+            },
+            unDisableUser(){
+                let V = this
+                for(let i = 0 ; i < V.multipleSelection.length ; i++) {
+                    axios({
+                        method: 'put',
+                        url: 'http://localhost/user/?id=' + V.multipleSelection[i].id
+                            + '&state=1'
+                    }).then(function (arr) {
+                        if (arr.data.statusCode !== 666) {
+                            V.$message({
+                                showClose: false,
+                                message: '错误',
+                                type: 'error',
+                                duration: 1000
+                            });
+                        } else {
+                            V.loadAllUser()
+                        }
+                    })
+                }
+            },
+        },
+        mounted: function () {
+            this.loadCurrentUser()
+            this.loadAllUser()
+        },
+        watch: {
+
+        }
+    }
+    var CtorUserManage = Vue.extend(MainUserManage)
+    var appUserManage = new CtorUserManage().$mount('#appUserManage');
+</script>

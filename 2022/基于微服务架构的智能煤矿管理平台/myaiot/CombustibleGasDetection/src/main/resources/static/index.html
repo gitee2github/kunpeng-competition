@@ -1,0 +1,368 @@
+<script src="/js/echarts.min.js"></script>
+<script>
+    var val = 0;
+</script>
+<div id="CombustibleGasDetection" style="width: 300px;right: 50px;position:absolute;">
+
+        <el-row :gutter="12" style="margin-bottom: 10px">
+            <el-col :span="24">
+                <el-card shadow="always" style="height: 500px;width:90%;background-color: #FDFDFD;margin: 0;padding: 0">
+
+                    <div style="right: 40px;top: 10px;margin-right: 5px;position: absolute;text-align: right">
+                            <el-button type="primary" circle icon="el-icon-close" @click="closePage" size="mini"></el-button>
+                    </div>
+
+
+                    <div style="text-align: center;color: #409eff">
+                        <div v-if="currentDevice.inLineState === 1">
+                            <span style="font-size: 20px">{{currentDevice.title}}</span><!--名称--><br>
+                            <span style="font-size: 12px">{{currentDevice.room.title}}</span><!--矿区-->&nbsp;
+                            <span style="font-size: 14px">在线</span>
+
+                        </div>
+                        <div v-else style="text-align: center;color: #909399">
+                            <span style="font-size: 20px">{{currentDevice.title}}</span><!--名称--><br>
+                            <span style="font-size: 12px">{{currentDevice.room.title}}</span><!--矿区-->&nbsp;
+                            <span style="font-size: 14px">离线</span>
+                        </div>
+
+
+                    </div>
+
+                    <div id="container" style="width: 100%;height: 200px"></div>
+
+
+
+                    <div style="text-align: center">
+                        <el-button size="small" @click="tag=1">设备管理</el-button>
+                        <el-button size="small" @click="tag=2">设备信息</el-button>
+                    </div>
+
+
+                    <div v-if="tag===1" style="margin-top: 30px;padding: 0;width: 100%">
+                        矿区:
+                        <el-select v-model="roomValue" placeholder="按矿区查找设备" size="small" style="width: 160px">
+                        <el-option
+                                v-for="item in roomOptions"
+                                :key="item.id"
+                                :label="item.title"
+                                :value="item.id">
+                        </el-option>
+                    </el-select><br>
+                        名称:<el-input v-model="deviceTitle" size="small"
+                                     style="width: 160px;margin-top: 10px;margin-bottom: 10px;margin-left: 5px"></el-input>
+                        <br>
+                        <div style="text-align: center;margin-top: 30px">
+                            <el-button type="success" icon="el-icon-check" size="small" @click="updateInfo"></el-button>
+                            <el-button type="danger" icon="el-icon-delete" size="small" @click="deleteDialogVisible=true"></el-button>
+                        </div>
+
+                    </div>
+                    <div v-if="tag===2"  style="margin: 0;margin-top:10px;padding: 0;width: 100%;text-align: center">
+                        <el-descriptions title="" size="mini" :column="1" border>
+                            <el-descriptions-item label="设备型号">{{currentDevice.model.title}}</el-descriptions-item>
+                            <el-descriptions-item label="添加时间">{{currentDevice.addTime.substring(0,16)}}</el-descriptions-item>
+                            <el-descriptions-item label="绑定状态" v-if="currentDevice.bindState == 1">已绑定</el-descriptions-item>
+                            <el-descriptions-item label="绑定状态" v-else>未绑定</el-descriptions-item>
+                            <el-descriptions-item label="绑定时间">{{currentDevice.bindTime.substring(0,16)}}</el-descriptions-item>
+                        </el-descriptions>
+                    </div>
+
+                    <el-dialog
+                            title="删除"
+                            :visible.sync="deleteDialogVisible"
+                            width="30%"
+                            :before-close="handleClose">
+                        <span>确认删除吗</span>
+                        <span slot="footer" class="dialog-footer">
+                        <el-button @click="deleteDialogVisible = false">取 消</el-button>
+                        <el-button type="primary" @click="deleteDevice">确 定</el-button>
+  </span>
+                    </el-dialog>
+
+                </el-card>
+            </el-col>
+        </el-row>
+    </div>
+
+<script>
+    var CombustibleGasDetectionMain = {
+        data() {
+            return {
+                concentration: 0.0,
+                currentDevice: {
+                    title: '',
+                    inLineState: '',
+                    room: {
+                        title: ''
+                    }
+                },
+                tag: 0,
+                roomOptions: [
+
+                ],
+                roomValue: '',
+                deleteDialogVisible: false,
+                deviceTitle: '',
+            }
+        },
+        methods: {
+
+            handleClose(done) {
+                this.$confirm('确认关闭？')
+                    .then(_ => {
+                        done();
+                    })
+                    .catch(_ => {});
+            },
+            loadAllRoom(){
+                V = this
+                V.roomValue = V.currentDevice.room.id
+                axios({
+                    method: 'get',
+                    url: 'http://localhost/room/getUserAllRoom/' + V.currentDevice.userId
+                }).then(function (arr) {
+                    let rooms = arr.data.data;
+                    if(arr.data.statusCode !== 666){
+                        window.location = '/'
+                    }else{
+                        for(let i = 0 ; i < rooms.length ; i++){
+                            V.roomOptions.push(rooms[i])
+                        }
+                    }
+                })
+            },
+            deleteDevice(){
+                let V = this
+                this.deleteDialogVisible = false
+                axios({
+                    method: 'delete',
+                    url: 'http://localhost/device/' + V.currentDevice.id
+                }).then(function (arr) {
+                    if(arr.data.statusCode !== 666){
+                        V.$message({
+                            showClose: false,
+                            message: '删除失败',
+                            type: 'error',
+                            duration: 1000
+                        });
+                    }else{
+                        V.$message({
+                            showClose: false,
+                            message: '删除成功',
+                            type: 'success',
+                            duration: 1000
+                        });
+                        $("#Main2").html("")
+                        appAllDevicePage.loadAllDevice()
+                    }
+                })
+            },
+            updateInfo(){
+                let V = this
+                if(V.currentDevice.title !== V.deviceTitle){
+                    axios({
+                        method: 'put',
+                        url: 'http://localhost/device/updateTitle?id=' + V.currentDevice.id
+                            + '&title=' + V.deviceTitle
+                    }).then(function (arr) {
+                        if(arr.data.statusCode !== 666){
+                            V.$message({
+                                showClose: false,
+                                message: '修改标题失败',
+                                type: 'error',
+                                duration: 1000
+                            });
+                        }else{
+                            V.$message({
+                                showClose: false,
+                                message: '修改标题成功',
+                                type: 'success',
+                                duration: 1000
+                            });
+                            appAllDevicePage.loadAllDevice()
+                            refreshDevice()
+                        }
+                    })
+                }
+
+
+                if(V.currentDevice.roomId !== V.roomValue){
+                    axios({
+                        method: 'put',
+                        url: 'http://localhost/device/updateRoom?id=' + V.currentDevice.id
+                            + '&roomId=' + V.roomValue
+                    }).then(function (arr) {
+                        if(arr.data.statusCode !== 666){
+                            V.$message({
+                                showClose: false,
+                                message: '修改矿区失败',
+                                type: 'error',
+                                duration: 1000
+                            });
+                        }else{
+                            V.$message({
+                                showClose: false,
+                                message: '修改矿区成功',
+                                type: 'success',
+                                duration: 1000
+                            });
+                            appAllDevicePage.loadAllDevice()
+                            refreshDevice()
+                        }
+                    })
+                }
+
+            },
+            closePage(){
+                $("#Main2").html("")
+            },
+        },
+        watch: {
+            
+
+        },
+
+    }
+
+    var CombustibleGasDetectionCtor = Vue.extend(CombustibleGasDetectionMain)
+    var CombustibleGasDetection = new CombustibleGasDetectionCtor().$mount('#CombustibleGasDetection');
+    CombustibleGasDetection.currentDevice = currentOpenedDevice
+    function refreshDevice() {
+        let V = this
+        axios({
+            method: 'get',
+            url: 'http://localhost/device/'+CombustibleGasDetection.currentDevice.id
+        }).then(function (arr) {
+            let device = arr.data.data;
+            if(arr.data.statusCode !== 666){
+                // window.location = '/'
+            }else{
+                CombustibleGasDetection.deviceTitle = device.title
+                CombustibleGasDetection.roomValue = device.roomId
+                CombustibleGasDetection.currentDevice.inLineState = device.inLineState
+                CombustibleGasDetection.currentDevice.title = device.title
+                CombustibleGasDetection.currentDevice.roomId = device.roomId
+                for(let i = 0 ; i < CombustibleGasDetection.roomOptions.length ; i++){
+                    if(CombustibleGasDetection.roomOptions[i].id === device.roomId){
+                        CombustibleGasDetection.currentDevice.room.title = CombustibleGasDetection.roomOptions[i].title
+                        break;
+                    }
+                }
+                if (CombustibleGasDetection.currentDevice.inLineState === 1){
+                    CombustibleGasDetection.currentDevice.jsonStatusInfo = device.jsonStatusInfo
+                    CombustibleGasDetection.disableMY_SWITCH = false
+                    let statusInfo = JSON.parse(CombustibleGasDetection.currentDevice.jsonStatusInfo);
+                    CombustibleGasDetection.concentration = statusInfo.concentration
+                    val = statusInfo.concentration
+                }else{
+                }
+            }
+        })
+        setTimeout(refreshDevice, 1000)
+    }
+    refreshDevice()
+    CombustibleGasDetection.loadAllRoom()
+
+
+</script>
+<script type="text/javascript">
+    var dom = document.getElementById("container");
+    var myChart = echarts.init(dom);
+    var app = {};
+    option = null;
+    option = {
+        backgroundColor: '#FFFFFF',
+        tooltip : {
+            formatter: "{a} <br/>{c} {b}"
+        },
+        toolbox: {
+            show : true,
+            feature : {
+                mark : {show: true},
+                restore : {show: true},
+                saveAsImage : {show: true}
+            }
+        },
+        series : [
+            {
+                name:'浓度',
+                type:'gauge',
+                min:0,
+                max:100,
+                splitNumber:8,
+                radius: '50%',
+                axisLine: {            // 坐标轴线
+                    lineStyle: {       // 属性lineStyle控制线条样式
+                        color: [[0.09, 'lime'],[0.82, '#1e90ff'],[1, '#ff4500']],
+                        width: 3,
+                        shadowColor : '#fff', //默认透明
+                        shadowBlur: 5
+                    }
+                },
+                axisLabel: {            // 坐标轴小标记
+                    textStyle: {       // 属性lineStyle控制线条样式
+                        fontWeight: 'bolder',
+                        color: '#fff',
+                        shadowColor : '#fff', //默认透明
+                        shadowBlur: 5
+                    }
+                },
+                axisTick: {            // 坐标轴小标记
+                    length :15,        // 属性length控制线长
+                    lineStyle: {       // 属性lineStyle控制线条样式
+                        color: 'auto',
+                        shadowColor : '#fff', //默认透明
+                        shadowBlur: 5
+                    }
+                },
+                splitLine: {           // 分隔线
+                    length :25,         // 属性length控制线长
+                    lineStyle: {       // 属性lineStyle（详见lineStyle）控制线条样式
+                        width:3,
+                        color: '#fff',
+                        shadowColor : '#fff', //默认透明
+                        shadowBlur: 5
+                    }
+                },
+                pointer: {           // 分隔线
+                    shadowColor : '#fff', //默认透明
+                    shadowBlur: 5
+                },
+                title : {
+                    textStyle: {       // 其余属性默认使用全局文本样式，详见TEXTSTYLE
+                        fontWeight: 'bolder',
+                        fontSize: 10,
+                        fontStyle: 'italic',
+                        color: '#fff',
+                        shadowColor : '#fff', //默认透明
+                        shadowBlur: 10
+                    }
+                },
+                detail : {
+                    backgroundColor: 'rgba(30,144,255,0.8)',
+                    borderWidth: 1,
+                    borderColor: '#fff',
+                    shadowColor : '#fff', //默认透明
+                    shadowBlur: 5,
+                    offsetCenter: [0, '100%'],       // x, y，单位px
+                    textStyle: {       // 其余属性默认使用全局文本样式，详见TEXTSTYLE
+                        fontWeight: 'bolder',
+                        color: '#fff'
+                    }
+                },
+                data:[{value: 0, name: '%'}]
+            },
+
+        ]
+    };
+
+    setInterval(function (){
+        option.series[0].data[0].value = val;
+        myChart.setOption(option);
+    },1000)
+    ;
+    if (option && typeof option === "object") {
+        myChart.setOption(option, true);
+    }
+</script>

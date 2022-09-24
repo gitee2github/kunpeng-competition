@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="FrameworkDetectionExcludesConfiguration">
+    <file type="web" url="file://$PROJECT_DIR$/datagear/datagear-web" />
+  </component>
+  <component name="MavenProjectsManager">
+    <option name="originalFiles">
+      <list>
+        <option value="$PROJECT_DIR$/EurekaServer/pom.xml" />
+        <option value="$PROJECT_DIR$/Gateway/pom.xml" />
+        <option value="$PROJECT_DIR$/DeviceService/pom.xml" />
+        <option value="$PROJECT_DIR$/UserServer/pom.xml" />
+        <option value="$PROJECT_DIR$/UserService/pom.xml" />
+        <option value="$PROJECT_DIR$/KribugLight/pom.xml" />
+        <option value="$PROJECT_DIR$/RoomService/pom.xml" />
+        <option value="$PROJECT_DIR$/Front/pom.xml" />
+        <option value="$PROJECT_DIR$/AdminServer/pom.xml" />
+        <option value="$PROJECT_DIR$/KribugFan/pom.xml" />
+        <option value="$PROJECT_DIR$/Asr/pom.xml" />
+        <option value="$PROJECT_DIR$/TemperatureAndHumidity/pom.xml" />
+        <option value="$PROJECT_DIR$/CombustibleGasDetection/pom.xml" />
+        <option value="$PROJECT_DIR$/WaterHeight/pom.xml" />
+        <option value="$PROJECT_DIR$/OptionService/pom.xml" />
+        <option value="$PROJECT_DIR$/AttributeService/pom.xml" />
+        <option value="$PROJECT_DIR$/StatusDataService/pom.xml" />
+        <option value="$PROJECT_DIR$/datagear/pom.xml" />
+      </list>
+    </option>
+    <option name="ignoredFiles">
+      <set>
+        <option value="$PROJECT_DIR$/datagear/datagear-analysis/pom.xml" />
+        <option value="$PROJECT_DIR$/datagear/datagear-connection/pom.xml" />
+        <option value="$PROJECT_DIR$/datagear/datagear-dataexchange/pom.xml" />
+        <option value="$PROJECT_DIR$/datagear/datagear-management/pom.xml" />
+        <option value="$PROJECT_DIR$/datagear/datagear-meta/pom.xml" />
+        <option value="$PROJECT_DIR$/datagear/datagear-persistence/pom.xml" />
+        <option value="$PROJECT_DIR$/datagear/datagear-util/pom.xml" />
+        <option value="$PROJECT_DIR$/datagear/datagear-web/pom.xml" />
+      </set>
+    </option>
+  </component>
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_11" default="true" project-jdk-name="11" project-jdk-type="JavaSDK">
+    <output url="file://$PROJECT_DIR$/out" />
+  </component>
+  <component name="SwUserDefinedSpecifications">
+    <option name="specTypeByUrl">
+      <map />
+    </option>
+  </component>
+</project>

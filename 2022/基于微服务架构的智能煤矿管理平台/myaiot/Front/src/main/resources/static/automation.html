@@ -1,0 +1,612 @@
+<div id="appAutomation">
+
+    <div>
+        <el-row>
+            <el-button type="success" icon="el-icon-plus" title="添加" :disabled="disabledAdd" @click="addAutomation"></el-button>
+            <el-button type="danger" icon="el-icon-delete" title="删除" :disabled="disabledDel" @click="delAutomation"></el-button>
+            <el-button type="warning" icon="el-icon-close" title="禁用" :disabled="disabledDel" @click="disableAutomation"></el-button>
+            <el-button type="primary" icon="el-icon-check" title="启用" :disabled="disabledDel" @click="unDisableAutomation"></el-button>
+            <el-button type="primary" icon="el-icon-check" title="编辑" :disabled="disabledEdit" @click="editAutomation"></el-button>
+
+        </el-row>
+    </div>
+    <template>
+        <el-table
+                ref="multipleTable"
+                :data="tableData"
+                tooltip-effect="dark"
+                style="width: 100%"
+                @selection-change="handleSelectionChange">
+            <el-table-column
+                    type="selection"
+                    width="55">
+            </el-table-column>
+            <el-table-column
+                    prop="title"
+                    label="标题"
+                    width="320">
+            </el-table-column>
+            <el-table-column
+                    prop="andCondition"
+                    label="执行条件"
+                    width="200">
+            </el-table-column>
+            <el-table-column
+                    prop="status"
+                    label="状态"
+                    width="120">
+            </el-table-column>
+        </el-table>
+    </template>
+
+    <el-drawer
+            title="设备联动"
+            :visible.sync="drawer"
+            :direction="direction"
+            :before-close="handleClose"
+            size="50%"
+    >
+
+        <el-form ref="form" :model="addAutomationForm" label-width="80px">
+            <el-form-item label="联动标题">
+                <el-input v-model="addAutomationForm.title"></el-input>
+            </el-form-item>
+            <el-form-item label="执行条件">
+                <el-select v-model="addAutomationForm.andCondition" placeholder="请选择执行条件">
+                    <el-option label="满足所有条件执行" value="1"></el-option>
+                    <el-option label="满足任意条件执行" value="0"></el-option>
+                </el-select>
+            </el-form-item>
+
+            <div>
+                <!--条件-->
+                <template>
+                    <el-table
+                            :data="addAutomationForm.condition"
+                            style="width: 100%">
+                        <el-table-column
+                                prop="device.title"
+                                label="设备名"
+                                width="180">
+                        </el-table-column>
+                        <el-table-column
+                                prop="attribute.title"
+                                label="设备属性"
+                                width="180">
+                        </el-table-column>
+                        <el-table-column
+                                prop="attribute.type"
+                                label="属性类型"
+                                :formatter="formatAddConditionFormType"
+                        >
+                        </el-table-column>
+                        <el-table-column
+                                prop="compare"
+                                label="比较条件"
+                                :formatter="formatAddConditionFormCompare"
+                        >
+                        </el-table-column>
+                        <el-table-column
+                                prop="value"
+                                label="阈值"
+                                :formatter="formatAddConditionFormValue"
+                        >
+                        </el-table-column>
+                        <el-table-column label="操作">
+                            <template slot-scope="scope">
+                                <el-button
+                                        size="mini"
+                                        type="danger"
+                                        @click="handleDeleteCondition(scope.$index, scope.row)">删除</el-button>
+                            </template>
+                        </el-table-column>
+                    </el-table>
+                </template>
+            </div>
+
+            <el-divider><i class="el-icon-mobile-phone"></i></el-divider>
+
+            <!--操作-->
+            <div>
+                <el-table
+                        :data="addAutomationForm.action"
+                        style="width: 100%">
+                    <el-table-column
+                            prop="device.title"
+                            label="设备名"
+                            width="180">
+                    </el-table-column>
+                    <el-table-column
+                            prop="option.title"
+                            label="操作"
+                            width="180">
+                    </el-table-column>
+
+                    <el-table-column label="删除">
+                        <template slot-scope="scope">
+                            <el-button
+                                    size="mini"
+                                    type="danger"
+                                    @click="handleDeleteAction(scope.$index, scope.row)">删除</el-button>
+                        </template>
+                    </el-table-column>
+                </el-table>
+            </div>
+
+            <el-form-item>
+                <el-button type="primary" @click="onSubmitAddAutomation">立即创建</el-button>
+                <el-button type="primary" @click="addCondition">添加条件</el-button>
+                <el-button type="primary" @click="addAction">添加操作</el-button>
+            </el-form-item>
+        </el-form>
+    </el-drawer>
+
+    <el-drawer
+            title="添加条件"
+            :visible.sync="drawerAddCondition"
+            :direction="direction2"
+            :before-close="handleClose">
+
+        <el-select v-model="addConditionForm.device" placeholder="选择设备" value-key="id" @change="loadDeviceAttribute">
+            <el-option
+                    v-for="item in allDevice"
+                    :key="item.id"
+                    :label="item.title"
+                    :value="item"
+            >
+            </el-option>
+        </el-select>
+
+        <el-select v-model="addConditionForm.attribute" placeholder="选择属性"
+                   value-key="id"
+                   @change="loadValue"
+                   >
+            <el-option
+                    v-for="item in allAttribute"
+                    :key="item.id"
+                    :label="item.title"
+                    :value="item"
+            >
+            </el-option>
+        </el-select>
+
+        <div v-if="attributeIsSwitch">
+            <el-select v-model="addConditionForm.value" placeholder="选择开关">
+                <el-option :key="1" label="开" :value="1"></el-option>
+                <el-option :key="-1" label="关" :value="-1"></el-option>
+            </el-select>
+        </div>
+        <div v-else>
+            <el-select v-model="addConditionForm.compare" placeholder="选择范围">
+                <el-option :key="1" label="大于" value="1"></el-option>
+                <el-option :key="0" label="等于" value="0"></el-option>
+                <el-option :key="-1" label="小于" value="-1"></el-option>
+            </el-select>
+            <el-input v-model="addConditionForm.value" placeholder="阈值"></el-input>
+        </div>
+
+        <el-button type="success" icon="el-icon-plus" title="添加" @click="addConditionToForm"></el-button>
+
+    </el-drawer>
+
+    <el-drawer
+            title="添加操作"
+            :visible.sync="drawerAddAction"
+            :direction="direction2"
+            :before-close="handleClose">
+
+        <el-select v-model="addActionForm.device" placeholder="选择设备" value-key="id" @change="loadDeviceOption">
+            <el-option
+                    v-for="item in allDevice"
+                    :key="item.id"
+                    :label="item.title"
+                    :value="item"
+            >
+            </el-option>
+        </el-select>
+
+        <el-select v-model="addActionForm.option" placeholder="选择操作"
+                   value-key="id"
+        >
+            <el-option
+                    v-for="item in allOption"
+                    :key="item.id"
+                    :label="item.title"
+                    :value="item"
+            >
+            </el-option>
+        </el-select>
+
+        <el-button type="success" icon="el-icon-plus" title="添加" @click="addActionToForm"></el-button>
+
+    </el-drawer>
+</div>
+<script>
+    var MainAutomation = {
+        data() {
+            return {
+                currentUser: {},
+                drawer: false,
+                drawerAddCondition: false,
+                drawerAddAction: false,
+                direction: 'rtl',
+                direction2: 'ltr',
+                multipleSelection: [],
+                allAutomation: [],
+                tableData: [],
+                allDevice: [],
+                allOption: [],
+                allAttribute: [],
+                disabledAdd: false,
+                disabledEdit: true,
+                disabledDel: true,
+                addAutomationForm: {
+                    title: "",
+                    andCondition: "",
+                    condition: [],
+                    action: []
+                },
+                addConditionForm: {},
+                addActionForm: {},
+                attributeIsSwitch: true,
+
+            };
+        },
+        methods: {
+            //加载用户
+            async loadCurrentUser(){
+                let V = this
+                await axios({
+                    method: 'get',
+                    url: 'http://localhost/user/getCurrentUser'
+                }).then(function (arr) {
+                    let user = arr.data.data;
+                    if(arr.data.statusCode !== 666){
+                        window.location = '/'
+                    }else{
+                        V.currentUser = arr.data.data
+                    }
+                })
+
+                V.loadAllAutomation()
+            },
+            handleClose(done) {
+                this.$confirm('确认关闭？')
+                    .then(_ => {
+                        done();
+                    })
+                    .catch(_ => {});
+            },
+            loadAllAutomation(){
+                let V = this
+                axios({
+                    method: 'get',
+                    url: 'http://localhost/device/automation/getAll?id=' + V.currentUser.id
+                }).then(function (arr) {
+                    if(arr.data.statusCode === 666){
+                        V.allAutomation = arr.data.data
+                        console.log(V.allAutomation)
+                        V.tableData = V.allAutomation
+                        for(let i = 0 ; i < V.tableData.length ; i++){
+                            V.tableData[i].andCondition = V.tableData[i].andCondition == 1 ? "所有条件" : "任意条件"
+                            V.tableData[i].status = V.tableData[i].status == 1 ? "启用" : "禁用"
+                        }
+
+                    }else{
+                        V.$message({
+                            showClose: false,
+                            message: '加载用户联动信息失败！',
+                            type: 'error',
+                            duration: 1000
+                        });
+                    }
+                })
+                V.loadAllDevice()
+
+            },
+            loadAllDevice() {
+                let V = this
+                axios({
+                    method: 'get',
+                    url: 'http://localhost/device/getDeviceByUser?id=' + V.currentUser.id
+                }).then(function (arr) {
+                    if(arr.data.statusCode === 666){
+                        V.allDevice = arr.data.data
+                    }else{
+                        V.$message({
+                            showClose: false,
+                            message: '加载用户设备信息失败！',
+                            type: 'error',
+                            duration: 1000
+                        });
+                    }
+                })
+
+
+            },
+            loadDeviceAttribute() {
+                let V = this
+                axios({
+                    method: 'get',
+                    url: 'http://localhost/device/attribute/getByDeviceId/' + V.addConditionForm.device.id
+                }).then(function (arr) {
+                    if(arr.data.statusCode === 666){
+                        V.allAttribute = arr.data.data
+                    }else{
+                        V.$message({
+                            showClose: false,
+                            message: '加载设备属性信息失败！',
+                            type: 'error',
+                            duration: 1000
+                        });
+                    }
+                })
+
+
+            },
+            handleSelectionChange(val) {
+                this.multipleSelection = val;
+                this.disabledEdit = this.multipleSelection.length !== 1;
+                this.disabledDel = !this.multipleSelection.length > 0;
+
+            },
+            addAutomation(){
+                let V = this
+                V.drawer = true
+            },
+            delAutomation(){
+                let V = this
+                for(let i = 0 ; i < V.multipleSelection.length ; i++){
+                    axios({
+                        method: 'delete',
+                        url: 'http://localhost/device/automation/' + V.multipleSelection[i].id
+                    }).then(function (arr) {
+                        if(arr.data.statusCode !== 666){
+                            this.$message({
+                                showClose: false,
+                                message: '删除错误',
+                                type: 'error',
+                                duration: 1000
+                            });
+                        }else{
+                            V.loadAllAutomation()
+                        }
+                    })
+                }
+
+            },
+            disableAutomation(){
+                let V = this
+                for(let i = 0 ; i < V.multipleSelection.length ; i++) {
+                    axios({
+                        method: 'put',
+                        url: 'http://localhost/device/automation/updateStatus?status=0&id=' + V.multipleSelection[i].id
+                    }).then(function (arr) {
+                        if (arr.data.statusCode !== 666) {
+                            V.$message({
+                                showClose: false,
+                                message: '错误',
+                                type: 'error',
+                                duration: 1000
+                            });
+                        } else {
+                            V.loadAllAutomation()
+                        }
+                    })
+                }
+            },
+            unDisableAutomation(){
+                let V = this
+                for(let i = 0 ; i < V.multipleSelection.length ; i++) {
+                    axios({
+                        method: 'put',
+                        url: 'http://localhost/device/automation/updateStatus?status=1&id=' + V.multipleSelection[i].id
+
+                    }).then(function (arr) {
+                        if (arr.data.statusCode !== 666) {
+                            V.$message({
+                                showClose: false,
+                                message: '错误',
+                                type: 'error',
+                                duration: 1000
+                            });
+                        } else {
+                            V.loadAllAutomation()
+                        }
+                    })
+                }
+            },
+            editAutomation(){},
+            addCondition(){
+                this.drawerAddCondition = true
+            },
+            addAction(){
+                this.drawerAddAction = true
+            },
+            loadAttribute(){
+            },
+            loadValue(){
+                let V = this
+                V.attributeIsSwitch = V.addConditionForm.attribute.type === "switch";
+            },
+            addConditionToForm(){
+                let type = "number"
+                if(this.attributeIsSwitch){
+                    type = "switch"
+                    this.addConditionForm.compare = '0'
+                }
+                this.addConditionForm.type = type
+                let condition = {}
+                condition.device = this.addConditionForm.device
+                condition.attribute = this.addConditionForm.attribute
+                condition.compare = this.addConditionForm.compare
+                condition.value = this.addConditionForm.value
+                this.addAutomationForm.condition.push(condition)
+                this.addConditionForm.attribute = ''
+                this.addConditionForm.compare = ''
+                this.addConditionForm.value = ''
+            },
+            formatAddConditionFormCompare(cellValue){
+                if(cellValue.attribute.type === "switch"){
+                    return ""
+                }
+                if(cellValue.compare === "1"){
+                    return "大于"
+                }else if(cellValue.compare === "-1"){
+                    return "小于"
+                }else{
+                    return "等于"
+                }
+            },
+            formatAddConditionFormType(cellValue){
+                if(cellValue.attribute.type === "number"){
+                    return "数值"
+                }else{
+                    return "开关"
+                }
+            },
+            formatAddConditionFormValue(cellValue){
+                if(cellValue.attribute.type === "switch"){
+                    if(cellValue.value == "1"){
+                        return "开"
+                    }return "关"
+                }else{
+                    return cellValue.value
+                }
+            },
+            handleDeleteCondition(index, row){
+                let V = this
+                V.addAutomationForm.condition.splice(index, 1);
+            },
+            handleDeleteAction(index, row){
+                let V = this
+                V.addAutomationForm.action.splice(index, 1);
+            },
+            loadDeviceOption(){
+                let V = this
+                axios({
+                    method: 'get',
+                    url: 'http://localhost/device/option/getByDeviceId/' + V.addActionForm.device.id
+                }).then(function (arr) {
+                    if(arr.data.statusCode === 666){
+                        V.allOption = arr.data.data
+                    }else{
+                        V.$message({
+                            showClose: false,
+                            message: '加载设备属性信息失败！',
+                            type: 'error',
+                            duration: 1000
+                        });
+                    }
+                })
+
+
+            },
+            addActionToForm(){
+                let V = this
+                let action = {}
+                action.device = V.addActionForm.device
+                action.option = V.addActionForm.option
+                V.addAutomationForm.action.push(action)
+            },
+            onSubmitAddAutomation(){
+                let V = this
+                console.log(V.addAutomationForm)
+                if (this.addAutomationForm.title === ''){
+                    V.$message({
+                        showClose: false,
+                        message: '请输入标题',
+                        type: 'warning',
+                        duration: 1000
+                    });
+                    return
+                }
+                if (this.addAutomationForm.andCondition === ''){
+                    V.$message({
+                        showClose: false,
+                        message: '请选择执行条件',
+                        type: 'warning',
+                        duration: 1000
+                    });
+                    return
+                }
+                console.log("start add ")
+                axios({
+                    method: 'post',
+                    url: 'http://localhost/device/automation/addGetId/?title='+
+                        this.addAutomationForm.title+'&andCondition='+
+                        this.addAutomationForm.andCondition+'&status=1&userId=' + V.currentUser.id
+                }).then(function (arr) {
+                    if(arr.data.statusCode === 666){
+                        let id = arr.data.data
+                        //添加所有condition
+                        for (let i = 0; i < V.addAutomationForm.condition.length; i++) {
+                            axios({
+                                method: 'post',
+                                url: 'http://localhost/device/condition/?automationId='+id
+                                    +'&compare='+V.addAutomationForm.condition[i].compare
+                                    +'&value='+V.addAutomationForm.condition[i].value
+                                    +'&attributeId='+V.addAutomationForm.condition[i].attribute.id
+                                    +'&deviceId=' + V.addAutomationForm.condition[i].device.id
+                            }).then(function (arr) {
+                                if(arr.data.statusCode === 666){
+                                }else{
+                                    V.$message({
+                                        showClose: false,
+                                        message: '添加失败！',
+                                        type: 'error',
+                                        duration: 1000
+                                    });
+                                    return
+                                }
+                            })
+                        }
+
+                        //添加所有action
+                        for (let i = 0; i < V.addAutomationForm.action.length; i++) {
+                            axios({
+                                method: 'post',
+                                url: 'http://localhost/device/action/?automationId='+id+
+                                    '&deviceId='+V.addAutomationForm.action[i].device.id+
+                                    '&optionId=' + V.addAutomationForm.action[i].option.id
+                            }).then(function (arr) {
+                                if(arr.data.statusCode === 666){
+                                }else{
+                                    V.$message({
+                                        showClose: false,
+                                        message: '添加失败！',
+                                        type: 'error',
+                                        duration: 1000
+                                    });
+                                    return
+                                }
+                            })
+                        }
+
+                    }else{
+                        V.$message({
+                            showClose: false,
+                            message: '添加失败！',
+                            type: 'error',
+                            duration: 1000
+                        });
+                    }
+                    V.$message({
+                        showClose: false,
+                        message: '添加成功！',
+                        type: 'success',
+                        duration: 1000
+                    });
+                })
+            }
+
+        },
+        mounted: function () {
+            this.loadCurrentUser()
+        },
+        watch: {
+        }
+    }
+    var CtorAutomation = Vue.extend(MainAutomation)
+    var appAutomation = new CtorAutomation().$mount('#appAutomation');
+</script>
